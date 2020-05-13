@@ -1,0 +1,59 @@
+.logo {
+    padding: 0px !important;
+    font-size: 16px !important;
+}
+
+.logo img {
+    vertical-align: top;
+}
+
+.btn-success {
+    color: #ffffff !important;
+}
+
+.dropdown-toggle {
+  background-color: #fff !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25) !important;
+}
+
+.form-control {
+  border-radius: 4px !important;
+}
+
+/*.invalid {
+  border-colour: #dc3545 !important;
+}*/
+
+/*.footer{
+  position:fixed;
+  bottom:0;
+  right:0;
+  left:0;
+  max-width: 230px;
+  background:#00adfc;
+  padding:10px;
+  box-sizing:border-box;
+}
+From https://stackoverflow.com/questions/37113739/shiny-dashboard-sticky-footer-in-dashboardsidebar
+*/
+
+
+@media only screen and (max-width: 574px) {
+    .col-md {
+        display: inline-block !important;
+        width: 100%  !important;
+    }
+
+/*    #report_type {
+        display: inline-block !important;
+        width: 100% !important;
+    }*/
+}
+
