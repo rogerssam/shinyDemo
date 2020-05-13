@@ -8,6 +8,9 @@
 #
 
 library(shiny)
+library(shinydashboard)
+library(shinyjs)
+library(shinyWidgets)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
