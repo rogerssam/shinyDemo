@@ -53,8 +53,8 @@ ui <- shinyUI(dashboardPagePlus(
             tabItem(tabName = "upload",
                     # hidden(
                     fluidRow(id = "entry",
-                             column(width = 2),
-                             column(width = 8,
+                             column(width = 1),
+                             column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
                                         # Input: Select a file ----
                                         fileInput("file1", "Choose CSV File",
@@ -76,21 +76,21 @@ ui <- shinyUI(dashboardPagePlus(
                                                                  Tab = "\t"),
                                                      selected = ","),
                                         
-                                        # Input: Select quotes ----
-                                        radioButtons("quote", "Quote",
-                                                     choices = c(None = "",
-                                                                 "Double Quote" = '"',
-                                                                 "Single Quote" = "'"),
-                                                     selected = '"'),
+                                        # # Input: Select quotes ----
+                                        # radioButtons("quote", "Quote",
+                                        #              choices = c(None = "",
+                                        #                          "Double Quote" = '"',
+                                        #                          "Single Quote" = "'"),
+                                        #              selected = '"'),
                                         
                                         # Horizontal line ----
-                                        tags$hr(),
+                                        # tags$hr(),
                                         
                                         # Input: Select number of rows to display ----
-                                        radioButtons("disp", "Display",
-                                                     choices = c(Head = "head",
-                                                                 All = "all"),
-                                                     selected = "head")
+                                        # radioButtons("disp", "Display",
+                                        #              choices = c(Head = "head",
+                                        #                          All = "all"),
+                                        #              selected = "head")
                                         
                                         # ),
                                         
@@ -159,7 +159,7 @@ ui <- shinyUI(dashboardPagePlus(
                                     box(width = NULL,
                                         title = "Uploaded data", solidHeader = T, status = "success",
                                         DT::dataTableOutput('contents')),
-                                    column(width = 2)
+                                    column(width = 1)
                              )
                              # )
                     )
@@ -270,8 +270,7 @@ server <- function(input, output) {
                 
                 df <- DT::datatable(read.csv(input$file1$datapath,
                                              header = input$header,
-                                             sep = input$sep,
-                                             quote = input$quote), rownames = F, extensions = "Responsive", plugins = 'natural',
+                                             sep = input$sep), rownames = F, extensions = "Responsive", plugins = 'natural',
                               options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
                                              pageLength = 3, scrollX = TRUE))
             },
@@ -281,12 +280,12 @@ server <- function(input, output) {
             }
         )
         
-        if(input$disp == "head") {
-            return(head(df$x$data))
-        }
-        else {
-            return(df$x$data)
-        }
+        # if(input$disp == "head") {
+        #     return(head(df$x$data))
+        # }
+        # else {
+        #     return(df$x$data)
+        # }
         
     })
     
