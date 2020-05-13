@@ -17,8 +17,8 @@ ui <- shinyUI(dashboardPagePlus(
                      sidebarMenu(id = "tabs",
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
                                  menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")),
-                                 menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg"))#,
-                                 # menuItem(tabName = "update", "Update a Report", icon = icon("edit", class = "fa-lg")),
+                                 menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
+                                 menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg"))#,
                                  # menuItem(tabName = "bibtex", "Generate BibTex file", icon = icon("file-code", class = "fa-lg")),
                                  # div(class='footer',
                                  # menuItem(tabName = "support", "Help and support", icon = icon("question", class = "fa-lg"))
@@ -263,10 +263,17 @@ server <- function(input, output) {
         # having a comma separator causes `read.csv` to error
         tryCatch(
             {
-                df <- read.csv(input$file1$datapath,
-                               header = input$header,
-                               sep = input$sep,
-                               quote = input$quote)
+                # df <- read.csv(input$file1$datapath,
+                #                header = input$header,
+                #                sep = input$sep,
+                #                quote = input$quote)
+                
+                df <- DT::datatable(read.csv(input$file1$datapath,
+                                             header = input$header,
+                                             sep = input$sep,
+                                             quote = input$quote), rownames = F, extensions = "Responsive", plugins = 'natural',
+                              options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                             pageLength = 3, scrollX = TRUE))
             },
             error = function(e) {
                 # return a safeError if a parsing error occurs
@@ -275,10 +282,10 @@ server <- function(input, output) {
         )
         
         if(input$disp == "head") {
-            return(head(df))
+            return(head(df$x$data))
         }
         else {
-            return(df)
+            return(df$x$data)
         }
         
     })
