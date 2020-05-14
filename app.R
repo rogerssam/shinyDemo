@@ -57,7 +57,7 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
                                         # Input: Select a file ----
-                                        fileInput("file1", "Choose CSV File",
+                                        fileInput("file1", "Choose CSV File", 
                                                   multiple = FALSE,
                                                   accept = c("text/csv",
                                                              "text/comma-separated-values,text/plain",
