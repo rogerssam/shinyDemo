@@ -103,33 +103,7 @@ ui <- shinyUI(dashboardPagePlus(
                                             value = FALSE,
                                             status = "success"
                                         )
-                                        # Input: Checkbox if file has header ----
-                                        # prettyCheckbox(
-                                        #     inputId = "header",
-                                        #     label = "Header", 
-                                        #     value = TRUE,
-                                        #     status = "primary",
-                                        #     icon = icon("check"), 
-                                        #     plain = TRUE,
-                                        #     outline = TRUE
-                                        # ),
                                         
-                                        # Input: Select separator ----
-                                        # prettyRadioButtons(
-                                        #     inputId = "sep",
-                                        #     label = "Separator:", 
-                                        #     choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
-                                        #     selected = ",",
-                                        #     inline = TRUE, 
-                                        #     status = "primary",
-                                        #     animation = "pulse",
-                                        #     icon = icon("check")
-                                        # ),
-                                        # radioButtons("sep", "Separator",
-                                        #              choices = c(Comma = ",",
-                                        #                          Semicolon = ";",
-                                        #                          Tab = "\t"),
-                                        #              selected = ","),
                                         
                                         # # Input: Select quotes ----
                                         # radioButtons("quote", "Quote",
@@ -304,7 +278,7 @@ ui <- shinyUI(dashboardPagePlus(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     
     output$contents <- DT::renderDataTable({
         
