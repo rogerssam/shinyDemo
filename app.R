@@ -63,18 +63,73 @@ ui <- shinyUI(dashboardPagePlus(
                                                              "text/comma-separated-values,text/plain",
                                                              ".csv")),
                                         
+                                        div(class = "container-fluid",
+                                            div(class = 'row',
+                                                div(class = 'col-md-4', id = 'project_code', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
+                                                    br(),
+                                                    prettyCheckbox(
+                                                        inputId = "header",
+                                                        label = "Header", 
+                                                        value = TRUE,
+                                                        status = "primary",
+                                                        icon = icon("check"), 
+                                                        plain = TRUE,
+                                                        outline = TRUE
+                                                    )
+                                                ),
+                                                # textInput("project_code", "Please enter a project code if relevant:", placeholder = "Project code (optional)")),
+                                                div(class = 'col-md-8', id = "report_type", style="float: left; vertical-align:top; width: 74%;",
+                                                    prettyRadioButtons(
+                                                        inputId = "sep",
+                                                        label = "Separator:", 
+                                                        choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
+                                                        selected = ",",
+                                                        inline = TRUE, 
+                                                        status = "primary",
+                                                        animation = "pulse",
+                                                        icon = icon("check")
+                                                    )#,
+                                                    # selectInput("report_type", "Please select the report type:", selectize = F,
+                                                    # c("Analysis Report", "Design Report", "Technical Report", "Presentation", "Paper", "Poster", "Other"))
+                                                )
+                                            )
+                                        ),
+                                        
                                         # Horizontal line ----
                                         tags$hr(),
-                                        
+                                        materialSwitch(
+                                            inputId = "builtin",
+                                            label = "Use built-in data", 
+                                            value = FALSE,
+                                            status = "success"
+                                        )
                                         # Input: Checkbox if file has header ----
-                                        checkboxInput("header", "Header", TRUE),
+                                        # prettyCheckbox(
+                                        #     inputId = "header",
+                                        #     label = "Header", 
+                                        #     value = TRUE,
+                                        #     status = "primary",
+                                        #     icon = icon("check"), 
+                                        #     plain = TRUE,
+                                        #     outline = TRUE
+                                        # ),
                                         
                                         # Input: Select separator ----
-                                        radioButtons("sep", "Separator",
-                                                     choices = c(Comma = ",",
-                                                                 Semicolon = ";",
-                                                                 Tab = "\t"),
-                                                     selected = ","),
+                                        # prettyRadioButtons(
+                                        #     inputId = "sep",
+                                        #     label = "Separator:", 
+                                        #     choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
+                                        #     selected = ",",
+                                        #     inline = TRUE, 
+                                        #     status = "primary",
+                                        #     animation = "pulse",
+                                        #     icon = icon("check")
+                                        # ),
+                                        # radioButtons("sep", "Separator",
+                                        #              choices = c(Comma = ",",
+                                        #                          Semicolon = ";",
+                                        #                          Tab = "\t"),
+                                        #              selected = ","),
                                         
                                         # # Input: Select quotes ----
                                         # radioButtons("quote", "Quote",
@@ -157,7 +212,7 @@ ui <- shinyUI(dashboardPagePlus(
                                     #     uiOutput("confirmation"), width = 12)),
                                     # br(),
                                     box(width = NULL,
-                                        title = "Uploaded data", solidHeader = T, status = "success",
+                                        title = textOutput("filetitle"), solidHeader = T, status = "success",
                                         DT::dataTableOutput('contents')),
                                     column(width = 1)
                              )
@@ -256,29 +311,37 @@ server <- function(input, output) {
         # input$file1 will be NULL initially. After the user selects
         # and uploads a file, head of that data file by default,
         # or all rows if selected, will be shown.
-        
-        req(input$file1)
-        
-        # when reading semicolon separated files,
-        # having a comma separator causes `read.csv` to error
-        tryCatch(
-            {
-                # df <- read.csv(input$file1$datapath,
-                #                header = input$header,
-                #                sep = input$sep,
-                #                quote = input$quote)
-                
-                df <- DT::datatable(read.csv(input$file1$datapath,
-                                             header = input$header,
-                                             sep = input$sep), rownames = F, extensions = "Responsive", plugins = 'natural',
-                              options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
-                                             pageLength = 3, scrollX = TRUE))
-            },
-            error = function(e) {
-                # return a safeError if a parsing error occurs
-                stop(safeError(e))
-            }
-        )
+        if(input$builtin) {
+            df <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
+                                options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                               pageLength = 3, scrollX = TRUE))
+            output$filetitle <- renderText("Using iris data")
+            return(df)
+        }
+        else {
+            
+            req(input$file1)
+            
+            output$filetitle <- renderText(paste0("Uploaded ", input$file1$name))
+            # when reading semicolon separated files,
+            # having a comma separator causes `read.csv` to error
+            tryCatch(
+                {
+                    dat <- read.csv(input$file1$datapath,
+                                    header = input$header,
+                                    sep = input$sep,
+                                    quote = input$quote)
+                    
+                    df <- DT::datatable(dat, rownames = F, extensions = "Responsive", plugins = 'natural',
+                                        options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                                       pageLength = 3, scrollX = TRUE))
+                },
+                error = function(e) {
+                    # return a safeError if a parsing error occurs
+                    stop(safeError(e))
+                }
+            )
+        }
         
         # if(input$disp == "head") {
         #     return(head(df$x$data))
