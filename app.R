@@ -4,6 +4,7 @@ library(shinydashboard)
 library(shinydashboardPlus)
 library(shinyalert)
 library(shinyWidgets)
+library(ggplot2)
 source("R/upload.R")
 
 # Define UI for application
@@ -103,7 +104,7 @@ ui <- shinyUI(dashboardPagePlus(
                                         materialSwitch(
                                             inputId = "builtin",
                                             label = "Use built-in iris data", 
-                                            value = FALSE,
+                                            value = TRUE,
                                             status = "success"
                                         )
                                         
@@ -197,16 +198,33 @@ ui <- shinyUI(dashboardPagePlus(
                              # )
                     )
             ),
-            tabItem(tabName = "table",
+            tabItem(tabName = "plot",
                     # hidden(
                     fluidRow(id = "search",
                              column(width = 2),
                              column(width = 8,
                                     box(width = NULL,
-                                        title = "Latest Report Submissions", solidHeader = T, status = "success",
-                                        DT::dataTableOutput('full_table'))
+                                        title = "Plot the data", solidHeader = T, status = "success",
+                                        selectInput("xval", "X values", choices = ""),
+                                        selectInput("yval", "Y values", choices = ""),
+                                        selectInput("colours", "Colour by", choices = ""),
+                                        selectInput("type", "Plot type", choices = c("Scatter plot", "Box plot", "Bar plot")),
+                                        selectInput("theme", "Plot theme", choices = c("Default", "Black and White" = "bw", "Classic", "Minimal", "Dark"), selected = "bw"),
+                                        plotOutput("plot"))
                              ),
                              column(width=2)
+                    )
+            ),
+            tabItem(tabName = "table",
+                    # hidden(
+                    fluidRow(id = "search",
+                             # column(width = 2),
+                             column(width = 12,
+                                    box(width = NULL,
+                                        title = "Latest Report Submissions", solidHeader = T, status = "success",
+                                        DT::dataTableOutput('full_table'))
+                             )#,
+                             # column(width=2)
                     )
                     # )
             )#,
@@ -283,6 +301,7 @@ ui <- shinyUI(dashboardPagePlus(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
+    rvs <- reactiveValues(data_table = NULL, data = NULL)
     
     # callModule(uploadServer, "file")
     datafile <- callModule(csvFile, "datafile",
@@ -290,25 +309,58 @@ server <- function(input, output, session) {
     
     output$contents <- DT::renderDataTable({
         if(input$builtin) {
-            data <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
-                                  options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
-                                                 pageLength = 3, scrollX = TRUE))
+            rvs$data_table <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
+                                            options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                                           pageLength = 3, scrollX = TRUE))
+            rvs$data <- iris
         }
         else {
-            data <- DT::datatable(datafile(), rownames = F, extensions = "Responsive", plugins = 'natural',
-                          options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
-                                         pageLength = 3, scrollX = TRUE))
+            rvs$data_table <- DT::datatable(datafile(), rownames = F, extensions = "Responsive", plugins = 'natural',
+                                            options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                                           pageLength = 3, scrollX = TRUE))
+            rvs$data <- datafile()
         }
-        return(data)
+        return(rvs$data_table)
     })
     
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    observeEvent(rvs$data, {
+        updateSelectInput(session, "xval", choices=colnames(rvs$data))
+        updateSelectInput(session, "yval", choices=colnames(rvs$data), selected = colnames(rvs$data)[2])
+        updateSelectInput(session, "colours", choices=c("None", colnames(rvs$data)), selected = "None")
+    })
+    
+    output$plot <- renderPlot({
+        selected_colour <- NULL
+        selected_fill <- NULL
         
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        if(!is.na(input$colours) | !is.null(input$colours)) {
+            if(input$colours == "None" | input$colours == "") {
+                selected_colour <- NULL
+                selected_fill <- NULL
+            }
+            else {
+                selected_colour <- input$colours
+                selected_fill <- input$colours
+            }
+        }
+        
+        p <- ggplot(rvs$data, aes_string(input$xval, input$yval, 
+                                         colour = selected_colour,
+                                         fill = selected_fill))
+        
+        switch (input$type,
+                "Scatter plot" = p <- p + geom_point(),
+                "Box plot" = p <- p + geom_boxplot(aes_string(fill = selected_colour, colour = NULL, group = selected_colour)),
+                "Bar plot" = p <- p + geom_bar(stat = "identity", aes_string(fill = selected_colour, colour = NULL))#,
+        )
+        
+        switch (input$theme,
+                Default = p + theme_gray(),
+                bw = p + theme_bw(),
+                Classic = p + theme_classic(),
+                Minimal = p + theme_minimal(),
+                Dark = p + theme_dark()
+        )
     })
 }
 
