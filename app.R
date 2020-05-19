@@ -4,6 +4,7 @@ library(shinydashboard)
 library(shinydashboardPlus)
 library(shinyalert)
 library(shinyWidgets)
+source("R/upload.R")
 
 # Define UI for application
 ui <- shinyUI(dashboardPagePlus(
@@ -57,49 +58,51 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
                                         # Input: Select a file ----
-                                        fileInput("file1", "Choose CSV File", 
-                                                  multiple = FALSE,
-                                                  accept = c("text/csv",
-                                                             "text/comma-separated-values,text/plain",
-                                                             ".csv")),
+                                        # fileInput("file1", "Choose CSV File", 
+                                        #           multiple = FALSE,
+                                        #           accept = c("text/csv",
+                                        #                      "text/comma-separated-values,text/plain",
+                                        #                      ".csv")),
+                                        # prettyuploadUI("file")$fileInput,
+                                        csvFileInput("datafile", "User data (.csv format)"),
                                         
-                                        div(class = "container-fluid",
-                                            div(class = 'row',
-                                                div(class = 'col-md-4', id = 'project_code', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
-                                                    br(),
-                                                    prettyCheckbox(
-                                                        inputId = "header",
-                                                        label = "Header", 
-                                                        value = TRUE,
-                                                        status = "primary",
-                                                        icon = icon("check"), 
-                                                        plain = TRUE,
-                                                        outline = TRUE
-                                                    )
-                                                ),
-                                                # textInput("project_code", "Please enter a project code if relevant:", placeholder = "Project code (optional)")),
-                                                div(class = 'col-md-8', id = "report_type", style="float: left; vertical-align:top; width: 74%;",
-                                                    prettyRadioButtons(
-                                                        inputId = "sep",
-                                                        label = "Separator:", 
-                                                        choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
-                                                        selected = ",",
-                                                        inline = TRUE, 
-                                                        status = "primary",
-                                                        animation = "pulse",
-                                                        icon = icon("check")
-                                                    )#,
-                                                    # selectInput("report_type", "Please select the report type:", selectize = F,
-                                                    # c("Analysis Report", "Design Report", "Technical Report", "Presentation", "Paper", "Poster", "Other"))
-                                                )
-                                            )
-                                        ),
+                                        # div(class = "container-fluid",
+                                        #     div(class = 'row',
+                                        #         div(class = 'col-md-4', id = 'project_code', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
+                                        #             br(),
+                                        #             prettyCheckbox(
+                                        #                 inputId = "header",
+                                        #                 label = "Header", 
+                                        #                 value = TRUE,
+                                        #                 status = "primary",
+                                        #                 icon = icon("check"), 
+                                        #                 plain = TRUE,
+                                        #                 outline = TRUE
+                                        #             )
+                                        #         ),
+                                        #         # textInput("project_code", "Please enter a project code if relevant:", placeholder = "Project code (optional)")),
+                                        #         div(class = 'col-md-8', id = "report_type", style="float: left; vertical-align:top; width: 74%;",
+                                        #             prettyRadioButtons(
+                                        #                 inputId = "sep",
+                                        #                 label = "Separator:", 
+                                        #                 choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
+                                        #                 selected = ",",
+                                        #                 inline = TRUE, 
+                                        #                 status = "primary",
+                                        #                 animation = "pulse",
+                                        #                 icon = icon("check")
+                                        #             )#,
+                                        #             # selectInput("report_type", "Please select the report type:", selectize = F,
+                                        #             # c("Analysis Report", "Design Report", "Technical Report", "Presentation", "Paper", "Poster", "Other"))
+                                        #         )
+                                        #     )
+                                        # ),
                                         
                                         # Horizontal line ----
                                         tags$hr(),
                                         materialSwitch(
                                             inputId = "builtin",
-                                            label = "Use built-in data", 
+                                            label = "Use built-in iris data", 
                                             value = FALSE,
                                             status = "success"
                                         )
@@ -186,7 +189,8 @@ ui <- shinyUI(dashboardPagePlus(
                                     #     uiOutput("confirmation"), width = 12)),
                                     # br(),
                                     box(width = NULL,
-                                        title = textOutput("filetitle"), solidHeader = T, status = "success",
+                                        # title = textOutput("filetitle"), 
+                                        solidHeader = T, status = "success",
                                         DT::dataTableOutput('contents')),
                                     column(width = 1)
                              )
@@ -280,50 +284,22 @@ ui <- shinyUI(dashboardPagePlus(
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     
+    # callModule(uploadServer, "file")
+    datafile <- callModule(csvFile, "datafile",
+                           stringsAsFactors = FALSE)
+    
     output$contents <- DT::renderDataTable({
-        
-        # input$file1 will be NULL initially. After the user selects
-        # and uploads a file, head of that data file by default,
-        # or all rows if selected, will be shown.
         if(input$builtin) {
-            df <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
-                                options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
-                                               pageLength = 3, scrollX = TRUE))
-            output$filetitle <- renderText("Using iris data")
-            return(df)
+            data <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
+                                  options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                                 pageLength = 3, scrollX = TRUE))
         }
         else {
-            
-            req(input$file1)
-            
-            output$filetitle <- renderText(paste0("Uploaded ", input$file1$name))
-            # when reading semicolon separated files,
-            # having a comma separator causes `read.csv` to error
-            tryCatch(
-                {
-                    dat <- read.csv(input$file1$datapath,
-                                    header = input$header,
-                                    sep = input$sep,
-                                    quote = input$quote)
-                    
-                    df <- DT::datatable(dat, rownames = F, extensions = "Responsive", plugins = 'natural',
-                                        options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
-                                                       pageLength = 3, scrollX = TRUE))
-                },
-                error = function(e) {
-                    # return a safeError if a parsing error occurs
-                    stop(safeError(e))
-                }
-            )
+            data <- DT::datatable(datafile(), rownames = F, extensions = "Responsive", plugins = 'natural',
+                          options = list(lengthMenu = list(c(3, 10, -1), c('3', '10', 'All')),
+                                         pageLength = 3, scrollX = TRUE))
         }
-        
-        # if(input$disp == "head") {
-        #     return(head(df$x$data))
-        # }
-        # else {
-        #     return(df$x$data)
-        # }
-        
+        return(data)
     })
     
     output$distPlot <- renderPlot({
