@@ -1,6 +1,6 @@
-#Upload CSV module
+# Upload CSV module
 
-csvFileInput <- function(id, label = "CSV file") {
+csvFileUI <- function(id, label = "CSV file") {
     # Create a namespace function using the provided id
     ns <- NS(id)
     
@@ -46,7 +46,7 @@ csvFileInput <- function(id, label = "CSV file") {
 
 
 # Module server function
-csvFile <- function(input, output, session, stringsAsFactors) {
+csvFileServer <- function(input, output, session, stringsAsFactors) {
     # The selected file, if any
     userFile <- reactive({
         # If no file is selected, don't do anything

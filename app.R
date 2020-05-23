@@ -65,7 +65,7 @@ ui <- shinyUI(dashboardPagePlus(
                                         #                      "text/comma-separated-values,text/plain",
                                         #                      ".csv")),
                                         # prettyuploadUI("file")$fileInput,
-                                        csvFileInput("datafile", "User data (.csv format)"),
+                                        csvFileUI("datafile", "User data (.csv format)"),
                                         
                                         # div(class = "container-fluid",
                                         #     div(class = 'row',
@@ -304,7 +304,7 @@ server <- function(input, output, session) {
     rvs <- reactiveValues(data_table = NULL, data = NULL)
     
     # callModule(uploadServer, "file")
-    datafile <- callModule(csvFile, "datafile",
+    datafile <- callModule(csvFileServer, "datafile",
                            stringsAsFactors = FALSE)
     
     output$contents <- DT::renderDataTable({
