@@ -5,6 +5,9 @@ library(shinydashboardPlus)
 library(shinyalert)
 library(shinyWidgets)
 library(ggplot2)
+# library(data.table)
+library(rhandsontable)
+library(lubridate)
 source("R/upload.R")
 
 # Define UI for application
@@ -217,14 +220,24 @@ ui <- shinyUI(dashboardPagePlus(
             ),
             tabItem(tabName = "table",
                     # hidden(
-                    fluidRow(id = "search",
+                    fluidRow(id = "update_cols", 
+                             column(width = 12,
+                                    box(width = NULL,
+                                        title = "Edit the column types", solidHeader = T, status = "info",
+                                        selectInput("col_select", label = "Select Column", choices = NULL),
+                                        selectInput("col_type", label = "Select new column type", choices = c("Choose" = "", "Numeric", "Date", "Text", "Factor"))
+                                    )
+                             )
+                    ),
+                    fluidRow(id = "tab",
                              # column(width = 2),
                              column(width = 12,
                                     box(width = NULL,
-                                        title = "Latest Report Submissions", solidHeader = T, status = "success",
-                                        DT::dataTableOutput('full_table'))
+                                        title = "Edit the data", solidHeader = T, status = "success",
+                                        rhandsontable::rHandsontableOutput("rhtable", height = 400))
                              )#,
                              # column(width=2)
+                             
                     )
                     # )
             )#,
@@ -348,20 +361,57 @@ server <- function(input, output, session) {
                                          colour = selected_colour,
                                          fill = selected_fill))
         
-        switch (input$type,
-                "Scatter plot" = p <- p + geom_point(),
-                "Box plot" = p <- p + geom_boxplot(aes_string(fill = selected_colour, colour = NULL, group = selected_colour)),
-                "Bar plot" = p <- p + geom_bar(stat = "identity", aes_string(fill = selected_colour, colour = NULL))#,
+        switch(input$type,
+               "Scatter plot" = p <- p + geom_point(),
+               "Box plot" = p <- p + geom_boxplot(aes_string(fill = selected_colour, colour = NULL, group = selected_colour)),
+               "Bar plot" = p <- p + geom_bar(stat = "identity", aes_string(fill = selected_colour, colour = NULL))#,
         )
         
-        switch (input$theme,
-                Default = p + theme_gray(),
-                bw = p + theme_bw(),
-                Classic = p + theme_classic(),
-                Minimal = p + theme_minimal(),
-                Dark = p + theme_dark()
+        switch(input$theme,
+               Default = p + theme_gray(),
+               bw = p + theme_bw(),
+               Classic = p + theme_classic(),
+               Minimal = p + theme_minimal(),
+               Dark = p + theme_dark()
         )
+        
     })
+    
+    output$rhtable <-  rhandsontable::renderRHandsontable({
+        # print(class(rvs$data))
+        
+        # data <- ifelse(input$builtin,
+        #                as.data.frame(iris),
+        #                as.data.frame(datafile()))
+        
+        rhandsontable::rhandsontable(rvs$data, stretchH = "all")
+    })
+    
+    observe({
+        updateSelectInput(session, inputId = "col_select", choices = colnames(rvs$data), selected = colnames(rvs$data)[1])
+    })
+    
+    observeEvent(input$col_type, {
+        if(input$col_type == "Numeric") {
+            # print(class(rvs$data[[input$col_select]]))
+            rvs$data[[input$col_select]] <- as.numeric(rvs$data[[input$col_select]])
+        }
+        if(input$col_type == "Date") {
+            # print(rvs$data[input$col_select])
+            rvs$data[[input$col_select]] <- lubridate::parse_date_time(rvs$data[[input$col_select]], c("dmy", "mdy", "ymd"))
+        }
+        if(input$col_type == "Text")  {
+            # print(rvs$data[input$col_select])
+            rvs$data[[input$col_select]] <- as.character(rvs$data[[input$col_select]])
+        }
+        if(input$col_type == "Factor") {
+            # print(rvs$data[input$col_select])
+            rvs$data[[input$col_select]] <- factor(rvs$data[[input$col_select]])
+        }
+    })
+    
+    
+    
 }
 
 # Run the application 
