@@ -23,11 +23,7 @@ ui <- shinyUI(dashboardPagePlus(
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
                                  menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")),
                                  menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
-                                 menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg"))#,
-                                 # menuItem(tabName = "bibtex", "Generate BibTex file", icon = icon("file-code", class = "fa-lg")),
-                                 # div(class='footer',
-                                 # menuItem(tabName = "support", "Help and support", icon = icon("question", class = "fa-lg"))
-                                 # )
+                                 menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg"))
                      )
     ),
     
@@ -143,19 +139,36 @@ ui <- shinyUI(dashboardPagePlus(
             ),
             tabItem(tabName = "plot",
                     # hidden(
-                    fluidRow(id = "search",
-                             column(width = 2),
-                             column(width = 8,
+                    fluidRow(id = "plot",
+                             # column(width = 2),
+                             column(width = 12,
                                     box(width = NULL,
                                         title = "Plot the data", solidHeader = T, status = "success",
-                                        selectInput("xval", "X values", choices = ""),
-                                        selectInput("yval", "Y values", choices = ""),
-                                        selectInput("colours", "Colour by", choices = ""),
-                                        selectInput("type", "Plot type", choices = c("Scatter plot", "Box plot", "Bar plot")),
-                                        selectInput("theme", "Plot theme", choices = c("Default", "Black and White" = "bw", "Classic", "Minimal", "Dark"), selected = "bw"),
-                                        plotOutput("plot"))
-                             ),
-                             column(width=2)
+                                        
+                                        dropdown(
+                                            
+                                            tags$h3("Plot Options"),
+                                            
+                                            selectInput("xval", "X values", choices = ""),
+                                            selectInput("yval", "Y values", choices = ""),
+                                            selectInput("colours", "Colour by", choices = ""),
+                                            selectInput("type", "Plot type", choices = c("Scatter plot", "Box plot", "Bar plot")),
+                                            selectInput("theme", "Plot theme", choices = c("Default", "Black and White" = "bw", "Classic", "Minimal", "Dark"), selected = "bw"),
+                                            sliderInput("size", "Point size", min = 1, max = 20, value = 4),
+                                            
+                                            style = "material-circle",
+                                            icon = icon("gear"),
+                                            status = "danger", width = "300px",
+                                            animate = animateOptions(
+                                                enter = animations$fading_entrances$fadeInLeftBig,
+                                                exit = animations$fading_exits$fadeOutLeftBig
+                                            ),
+                                            tooltip = tooltipOptions(title = "Click to change plot options")
+                                        ),
+                                        
+                                        plotOutput("plot", height = "70vh")
+                                    )
+                             )
                     )
             ),
             tabItem(tabName = "table",
@@ -306,7 +319,7 @@ server <- function(input, output, session) {
                                          fill = selected_fill))
         
         switch(input$type,
-               "Scatter plot" = p <- p + geom_point(),
+               "Scatter plot" = p <- p + geom_point(size = input$size),
                "Box plot" = p <- p + geom_boxplot(aes_string(fill = selected_colour, colour = NULL, group = selected_colour)),
                "Bar plot" = p <- p + geom_bar(stat = "identity", aes_string(fill = selected_colour, colour = NULL))#,
         )
