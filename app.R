@@ -50,10 +50,6 @@ ui <- shinyUI(dashboardPagePlus(
             )
         ),
         
-        # source("sof-auth/sign-in.R", local = TRUE)$value,
-        # source("sof-auth/register.R", local = TRUE)$value,
-        # source("sof-auth/verify-email.R", local = TRUE)$value,
-        
         tabItems(
             tabItem(tabName = "upload",
                     # hidden(
@@ -61,46 +57,7 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 1),
                              column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
-                                        # Input: Select a file ----
-                                        # fileInput("file1", "Choose CSV File", 
-                                        #           multiple = FALSE,
-                                        #           accept = c("text/csv",
-                                        #                      "text/comma-separated-values,text/plain",
-                                        #                      ".csv")),
-                                        # prettyuploadUI("file")$fileInput,
                                         csvFileUI("datafile", "User data (.csv format)"),
-                                        
-                                        # div(class = "container-fluid",
-                                        #     div(class = 'row',
-                                        #         div(class = 'col-md-4', id = 'project_code', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
-                                        #             br(),
-                                        #             prettyCheckbox(
-                                        #                 inputId = "header",
-                                        #                 label = "Header", 
-                                        #                 value = TRUE,
-                                        #                 status = "primary",
-                                        #                 icon = icon("check"), 
-                                        #                 plain = TRUE,
-                                        #                 outline = TRUE
-                                        #             )
-                                        #         ),
-                                        #         # textInput("project_code", "Please enter a project code if relevant:", placeholder = "Project code (optional)")),
-                                        #         div(class = 'col-md-8', id = "report_type", style="float: left; vertical-align:top; width: 74%;",
-                                        #             prettyRadioButtons(
-                                        #                 inputId = "sep",
-                                        #                 label = "Separator:", 
-                                        #                 choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
-                                        #                 selected = ",",
-                                        #                 inline = TRUE, 
-                                        #                 status = "primary",
-                                        #                 animation = "pulse",
-                                        #                 icon = icon("check")
-                                        #             )#,
-                                        #             # selectInput("report_type", "Please select the report type:", selectize = F,
-                                        #             # c("Analysis Report", "Design Report", "Technical Report", "Presentation", "Paper", "Poster", "Other"))
-                                        #         )
-                                        #     )
-                                        # ),
                                         
                                         # Horizontal line ----
                                         tags$hr(),
@@ -112,23 +69,7 @@ ui <- shinyUI(dashboardPagePlus(
                                         )
                                         
                                         
-                                        # # Input: Select quotes ----
-                                        # radioButtons("quote", "Quote",
-                                        #              choices = c(None = "",
-                                        #                          "Double Quote" = '"',
-                                        #                          "Single Quote" = "'"),
-                                        #              selected = '"'),
                                         
-                                        # Horizontal line ----
-                                        # tags$hr(),
-                                        
-                                        # Input: Select number of rows to display ----
-                                        # radioButtons("disp", "Display",
-                                        #              choices = c(Head = "head",
-                                        #                          All = "all"),
-                                        #              selected = "head")
-                                        
-                                        # ),
                                         
                                         
                                     ), 
@@ -198,7 +139,6 @@ ui <- shinyUI(dashboardPagePlus(
                                         DT::dataTableOutput('contents')),
                                     column(width = 1)
                              )
-                             # )
                     )
             ),
             tabItem(tabName = "plot",
@@ -224,22 +164,25 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 12,
                                     box(width = NULL,
                                         title = "Edit the column types", solidHeader = T, status = "info",
-                                        selectInput("col_select", label = "Select Column", choices = NULL),
-                                        selectInput("col_type", label = "Select new column type", choices = c("Choose" = "", "Numeric", "Date", "Text", "Factor"))
+                                        div(class = "container-fluid",
+                                            div(class = 'row',
+                                                div(class = 'col-md', id = 'select_col', style="float: left; vertical-align:top; width: 49%; margin-right: 2%",
+                                                    selectInput("col_select", label = "Select Column", choices = NULL)),
+                                                div(class = 'col-md', id = "select_type", style="float: left; vertical-align:top; width: 49%;",
+                                                    selectInput("col_type", label = "Select new column type", choices = c("Choose" = "", "Numeric", "Date", "Text", "Factor"))
+                                                )
+                                            )
+                                        )
                                     )
                              )
                     ),
                     fluidRow(id = "tab",
-                             # column(width = 2),
                              column(width = 12,
                                     box(width = NULL,
                                         title = "Edit the data", solidHeader = T, status = "success",
                                         rhandsontable::rHandsontableOutput("rhtable", height = 400))
-                             )#,
-                             # column(width=2)
-                             
+                             )
                     )
-                    # )
             )#,
             # tabItem(tabName = "update",
             #         # hidden(
@@ -320,6 +263,7 @@ server <- function(input, output, session) {
     datafile <- callModule(csvFileServer, "datafile",
                            stringsAsFactors = FALSE)
     
+    
     output$contents <- DT::renderDataTable({
         if(input$builtin) {
             rvs$data_table <- DT::datatable(iris, rownames = F, extensions = "Responsive", plugins = 'natural',
@@ -378,40 +322,43 @@ server <- function(input, output, session) {
     })
     
     output$rhtable <-  rhandsontable::renderRHandsontable({
-        # print(class(rvs$data))
-        
-        # data <- ifelse(input$builtin,
-        #                as.data.frame(iris),
-        #                as.data.frame(datafile()))
-        
-        rhandsontable::rhandsontable(rvs$data, stretchH = "all")
+        rhandsontable::rhandsontable(rvs$data, stretchH = "all") %>% 
+            hot_cols(columnSorting = T)
+    })
+    
+    observeEvent(input$rhtable, {
+        rvs$data <- hot_to_r(input$rhtable)
     })
     
     observe({
-        updateSelectInput(session, inputId = "col_select", choices = colnames(rvs$data), selected = colnames(rvs$data)[1])
+        updateSelectInput(session, inputId = "col_select", choices = colnames(rvs$data))
     })
     
     observeEvent(input$col_type, {
         if(input$col_type == "Numeric") {
-            # print(class(rvs$data[[input$col_select]]))
-            rvs$data[[input$col_select]] <- as.numeric(rvs$data[[input$col_select]])
+            try(rvs$data[[input$col_select]] <- as.numeric(rvs$data[[input$col_select]]))
         }
         if(input$col_type == "Date") {
-            # print(rvs$data[input$col_select])
-            rvs$data[[input$col_select]] <- lubridate::parse_date_time(rvs$data[[input$col_select]], c("dmy", "mdy", "ymd"))
+            tryCatch(
+                {
+                    rvs$data[[input$col_select]] <- as.Date(lubridate::parse_date_time(rvs$data[[input$col_select]], c("dmy", "mdy", "ymd")))
+                }, 
+                warning = function(w) {
+                    print("warning")
+                }, 
+                error = function(e) {
+                    print("error")
+                }
+            )
         }
+        
         if(input$col_type == "Text")  {
-            # print(rvs$data[input$col_select])
-            rvs$data[[input$col_select]] <- as.character(rvs$data[[input$col_select]])
+            try(rvs$data[[input$col_select]] <- as.character(rvs$data[[input$col_select]]))
         }
         if(input$col_type == "Factor") {
-            # print(rvs$data[input$col_select])
-            rvs$data[[input$col_select]] <- factor(rvs$data[[input$col_select]])
+            try(rvs$data[[input$col_select]] <- factor(rvs$data[[input$col_select]]))
         }
     })
-    
-    
-    
 }
 
 # Run the application 
