@@ -5,9 +5,9 @@ account: samrogers
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2399886
-bundleId: 3221895
+bundleId: 3221943
 url: https://samrogers.shinyapps.io/shinyDemo/
-when: 1591169620.92378
+when: 1591170424.68776
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: .RData|report.docx|report.pdf|todo.md
