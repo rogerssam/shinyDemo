@@ -4,7 +4,7 @@
 - ~~Select one or two variables for plotting~~
 - ~~Select one variable for colouring/shape?~~
 - ~~Produce plot~~
-    - Option for interactive/plotly
+    - ~~Option for interactive/plotly~~
 - ~~Produce tabular summary~~
     - ~~Using DT~~
 - ~~Update plot when data edited~~

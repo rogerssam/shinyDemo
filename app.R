@@ -29,15 +29,9 @@ ui <- shinyUI(dashboardPagePlus(
     dashboardSidebar(collapsed = TRUE,# width = 300,
                      sidebarMenu(id = "tabs",
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
-                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg"),
-                                          conditionalPanel("input.sidebarmenu == 'plot'",
-                                                           materialSwitch(
-                                                               inputId = "interactive",
-                                                               label = "Interactive plot",
-                                                               value = FALSE,
-                                                               status = "success",
-                                                               width = '95%', inline = T)
-                                          )
+                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")#,
+                                          # conditionalPanel("input.sidebarmenu === 'plot'",
+                                          # )
                                  ),
                                  menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
                                  menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg")),
@@ -110,8 +104,15 @@ ui <- shinyUI(dashboardPagePlus(
                                             selectInput("yval", "Y values", choices = ""),
                                             selectInput("colours", "Colour by", choices = ""),
                                             selectInput("type", "Plot type", choices = c("Scatter plot", "Box plot", "Bar plot")),
-                                            selectInput("theme", "Plot theme", choices = c("Default", "Black and White" = "bw", "Classic", "Minimal", "Dark"), selected = "bw"),
+                                            selectInput("theme", "Plot theme", choices = c("ggplot2 Default", "Black and White" = "bw", "Classic", "Minimal", "Dark"), selected = "bw"),
                                             sliderInput("size", "Point size", min = 1, max = 20, value = 4),
+                                            materialSwitch(
+                                                inputId = "interactive",
+                                                label = "Interactive plot",
+                                                value = FALSE,
+                                                status = "success",
+                                                width = '95%', 
+                                                inline = T),
                                             
                                             style = "material-circle",
                                             icon = icon("gear"),
@@ -122,15 +123,15 @@ ui <- shinyUI(dashboardPagePlus(
                                             ),
                                             tooltip = tooltipOptions(title = "Click to change plot options")
                                         ),
-                                        # conditionalPanel(
-                                        # condition = "input.interactive == 'false'",
-                                        plotOutput("plot", height = "70vh")
-                                        # ),
+                                        conditionalPanel(
+                                            condition = 'input.interactive == true',
+                                            plotlyOutput('interactive_plot', height = "70vh")
+                                        ),
                                         
-                                        # conditionalPanel(
-                                        # condition = "input.myInput == 'value2'",
-                                        # plotlyOutput("plot", height = "70vh")
-                                        # )                 
+                                        conditionalPanel(
+                                            condition = 'input.interactive == false',
+                                            plotOutput('static_plot', height = "70vh")
+                                        )
                                         # plotOutput("plot", height = "70vh")
                                     )
                              )
@@ -282,7 +283,7 @@ server <- function(input, output, session) {
         updateSelectInput(session, "colours", choices=c("None", colnames(rvs$data)), selected = "None")
     })
     
-    output$plot <- renderPlot({
+    output$static_plot <- renderPlot({
         selected_colour <- NULL
         selected_fill <- NULL
         
@@ -308,12 +309,51 @@ server <- function(input, output, session) {
         )
         
         switch(input$theme,
-               Default = p <- p + theme_gray(base_size=16),
+               "ggplot2 Default" = p <- p + theme_gray(base_size=16),
                bw = p <- p + theme_bw(base_size=16),
                Classic = p <- p + theme_classic(base_size=16),
                Minimal = p <- p + theme_minimal(base_size=16),
                Dark = p <- p + theme_dark(base_size=16)
         )
+        
+        return(p)
+    })
+    
+    output$interactive_plot <- renderPlotly({
+        selected_colour <- NULL
+        selected_fill <- NULL
+        
+        if(!is.na(input$colours) | !is.null(input$colours)) {
+            if(input$colours == "None" | input$colours == "") {
+                selected_colour <- NULL
+                selected_fill <- NULL
+            }
+            else {
+                selected_colour <- input$colours
+                selected_fill <- input$colours
+            }
+        }
+        
+        p <- ggplot(rvs$data, aes_string(input$xval, input$yval, 
+                                         colour = selected_colour,
+                                         fill = selected_fill))
+        
+        switch(input$type,
+               "Scatter plot" = p <- p + geom_point(size = input$size),
+               "Box plot" = p <- p + geom_boxplot(aes_string(fill = selected_colour, colour = NULL, group = selected_colour)),
+               "Bar plot" = p <- p + geom_bar(stat = "identity", aes_string(fill = selected_colour, colour = NULL))#,
+        )
+        
+        switch(input$theme,
+               "ggplot2 Default" = p <- p + theme_gray(base_size=16),
+               bw = p <- p + theme_bw(base_size=16),
+               Classic = p <- p + theme_classic(base_size=16),
+               Minimal = p <- p + theme_minimal(base_size=16),
+               Dark = p <- p + theme_dark(base_size=16)
+        )
+        
+        p <- ggplotly(p)
+        
         return(p)
     })
     
