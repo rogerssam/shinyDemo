@@ -8,6 +8,7 @@ library(ggplot2)
 library(rhandsontable)
 library(lubridate)
 library(Cairo)
+library(plotly)
 source("R/upload.R")
 
 options(shiny.usecairo=T)
@@ -28,7 +29,16 @@ ui <- shinyUI(dashboardPagePlus(
     dashboardSidebar(collapsed = TRUE,# width = 300,
                      sidebarMenu(id = "tabs",
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
-                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")),
+                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg"),
+                                          conditionalPanel("input.sidebarmenu == 'plot'",
+                                                           materialSwitch(
+                                                               inputId = "interactive",
+                                                               label = "Interactive plot",
+                                                               value = FALSE,
+                                                               status = "success",
+                                                               width = '95%', inline = T)
+                                          )
+                                 ),
                                  menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
                                  menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg")),
                                  menuItem(tabName = "about", "About This App", icon = icon("info-circle", class = "fa-lg"))
@@ -72,7 +82,7 @@ ui <- shinyUI(dashboardPagePlus(
                                             value = TRUE,
                                             status = "success"
                                         )
- 
+                                        
                                     ), 
                                     
                                     box(width = NULL,
@@ -112,8 +122,16 @@ ui <- shinyUI(dashboardPagePlus(
                                             ),
                                             tooltip = tooltipOptions(title = "Click to change plot options")
                                         ),
-                                        
+                                        # conditionalPanel(
+                                        # condition = "input.interactive == 'false'",
                                         plotOutput("plot", height = "70vh")
+                                        # ),
+                                        
+                                        # conditionalPanel(
+                                        # condition = "input.myInput == 'value2'",
+                                        # plotlyOutput("plot", height = "70vh")
+                                        # )                 
+                                        # plotOutput("plot", height = "70vh")
                                     )
                              )
                     )
@@ -235,7 +253,7 @@ ui <- shinyUI(dashboardPagePlus(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    rvs <- reactiveValues(data_table = NULL, data = NULL)
+    rvs <- reactiveValues(data_table = NULL, data = NULL, plot = NULL)
     
     # callModule(uploadServer, "file")
     datafile <- callModule(csvFileServer, "datafile",
@@ -290,13 +308,13 @@ server <- function(input, output, session) {
         )
         
         switch(input$theme,
-               Default = p + theme_gray(base_size=16),
-               bw = p + theme_bw(base_size=16),
-               Classic = p + theme_classic(base_size=16),
-               Minimal = p + theme_minimal(base_size=16),
-               Dark = p + theme_dark(base_size=16)
+               Default = p <- p + theme_gray(base_size=16),
+               bw = p <- p + theme_bw(base_size=16),
+               Classic = p <- p + theme_classic(base_size=16),
+               Minimal = p <- p + theme_minimal(base_size=16),
+               Dark = p <- p + theme_dark(base_size=16)
         )
-        
+        return(p)
     })
     
     output$rhtable <-  rhandsontable::renderRHandsontable({
