@@ -18,21 +18,15 @@ shinyOptions(plot.autocolors = TRUE)
 ui <- shinyUI(dashboardPagePlus(
     dashboardHeaderPlus(title = tagList(
         span(class = "logo-lg", "Shiny Demo", style = "padding: 0;"), 
-        img(src = "BH_square.jpg"))#,
-        # dropdown(notificationItem("text", icon = shiny::icon("warning"), status = "success",
-        # href = NULL))
+        img(src = "BH_square.jpg"))
     ),
     enable_preloader = TRUE,
     loading_duration = 1,
-    # ,
     
     dashboardSidebar(collapsed = TRUE,# width = 300,
                      sidebarMenu(id = "tabs",
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
-                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")#,
-                                          # conditionalPanel("input.sidebarmenu === 'plot'",
-                                          # )
-                                 ),
+                                 menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")),
                                  menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
                                  menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg")),
                                  menuItem(tabName = "about", "About This App", icon = icon("info-circle", class = "fa-lg"))
@@ -61,7 +55,6 @@ ui <- shinyUI(dashboardPagePlus(
         
         tabItems(
             tabItem(tabName = "upload",
-                    # hidden(
                     fluidRow(id = "entry",
                              column(width = 1),
                              column(width = 10,
@@ -80,7 +73,6 @@ ui <- shinyUI(dashboardPagePlus(
                                     ), 
                                     
                                     box(width = NULL,
-                                        # title = textOutput("filetitle"), 
                                         solidHeader = T, status = "success",
                                         DT::dataTableOutput('contents')),
                                     column(width = 1)
@@ -89,15 +81,12 @@ ui <- shinyUI(dashboardPagePlus(
             ),
             
             tabItem(tabName = "plot",
-                    # hidden(
                     fluidRow(id = "plot",
-                             # column(width = 2),
                              column(width = 12,
                                     box(width = NULL,
                                         title = "Plot the data", solidHeader = T, status = "success",
                                         
                                         dropdown(
-                                            
                                             tags$h3("Plot Options"),
                                             
                                             selectInput("xval", "X values", choices = ""),
@@ -132,14 +121,12 @@ ui <- shinyUI(dashboardPagePlus(
                                             condition = 'input.interactive == false',
                                             plotOutput('static_plot', height = "70vh")
                                         )
-                                        # plotOutput("plot", height = "70vh")
                                     )
                              )
                     )
             ),
             
             tabItem(tabName = "table",
-                    # hidden(
                     fluidRow(id = "update_cols", 
                              column(width = 12,
                                     box(width = NULL,
@@ -175,30 +162,24 @@ ui <- shinyUI(dashboardPagePlus(
                                             div(class = 'row',
                                                 div(class = 'col-md', id = 'title', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;",
                                                     textInput("title", "Enter Report Title:", placeholder = "Report Title")),
-                                                div(class = 'col-md', id = "sel_title", style="float: right;vertical-align:top; width: 49%;",
-                                                    pickerInput(
-                                                        inputId = "select_title",
-                                                        label = "Select a title (or type to narrow options)",
-                                                        choices = NA,
-                                                        options = list(title = "Select or type title",
-                                                                       `live-search` = TRUE)
-                                                    ))
+                                                div(class = 'col-md', id = "author", style="float: right;vertical-align:top; width: 49%;",
+                                                    textInput("author", "Enter Report Author:", placeholder = "Report Author"))
                                                 # selectizeInput(inputId = "select_title", label = "Select a title (or start typing to narrow options)", choices = NULL))
-                                            ),
-                                            div(class = 'row',
-                                                div(class = 'col-md', id = 'include_no',
-                                                    prettySwitch(inputId = "include_no", label = "Include Report Number in Bibtex Title", status = "success", fill = TRUE, bigger = TRUE)
-                                                )
-                                            )
+                                            )#,
+                                            # div(class = 'row',
+                                            #     div(class = 'col-md', id = 'include_no',
+                                            #         prettySwitch(inputId = "include_no", label = "Include Report Number in Bibtex Title", status = "success", fill = TRUE, bigger = TRUE)
+                                            #     )
+                                            # )
                                         ),
                                         br(),
-                                        h4("You have selected"),
-                                        DT::dataTableOutput('report'),
-                                        br(),
-                                        # h4("The Bibtex entry for your selected report is"),
-                                        # uiOutput('bibtex'),
-                                        # br()#,
-                                        downloadButton('download')
+                                        actionBttn("generate", "Generate Report", 
+                                                   icon = icon("file-alt"), style = "fill", 
+                                                   color = "primary"),
+                                        
+                                        conditionalPanel(condition = "output.reportbuilt",
+                                                         downloadBttn("download", "Download now", style = "fill", color = "success"))
+                                        # downloadButton('download')
                                     )
                              ),
                              column(width=1)
@@ -254,7 +235,7 @@ ui <- shinyUI(dashboardPagePlus(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    rvs <- reactiveValues(data_table = NULL, data = NULL, plot = NULL)
+    rvs <- reactiveValues(data_table = NULL, data = NULL, plot = NULL, filepath = NULL)
     
     # callModule(uploadServer, "file")
     datafile <- callModule(csvFileServer, "datafile",
@@ -396,6 +377,82 @@ server <- function(input, output, session) {
         }
     })
     
+    
+    observeEvent(input$generate, {
+        # For PDF output, change this to "report.pdf"
+        
+        progress <- shiny::Progress$new()
+        # Make sure it closes when we exit this reactive, even if there's an error
+        on.exit(progress$close())
+        progress$set(message = "Building report.", 
+                     detail = "This may take a while. This window will disappear  
+                     when the report is ready.", value = 1)
+        
+        # filename <- paste0("SAGI-STH_training_report_", Sys.Date(), ".pdf")
+        
+        # content <- function(file) {
+        # Copy the report file to a temporary directory before processing it, in
+        # case we don't have write permissions to the current working dir (which
+        # can happen when deployed).
+        tempReport <- file.path(tempdir(), "report.Rmd")
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        
+        tmp_file <- paste0(tempfile(), ".pdf")
+        
+        # Set up parameters to pass to Rmd document
+        params <- list(data = rvs$data, plot = rvs$plot, x_val = input$xval, y_val = input$yval,
+                       set_title = input$title, set_author = input$author)
+        
+        # Knit the document, passing in the `params` list, and eval it in a
+        # child of the global environment (this isolates the code in the document
+        # from the code in this app).
+        rmarkdown::render(tempReport, 
+                          output_file = tmp_file, 
+                          params = params,
+                          envir = new.env(parent = globalenv()))
+        
+        rvs$filepath <- tmp_file
+        # }
+    })
+    
+    output$reportbuilt <- reactive({
+        return(!is.null(rvs$filepath))
+    })
+    outputOptions(output, 'reportbuilt', suspendWhenHidden= FALSE)
+    
+    # output$report <- downloadHandler(
+    #     # For PDF output, change this to "report.pdf"
+    #     filename = "report.pdf",
+    #     content = function(file) {
+    #         # Copy the report file to a temporary directory before processing it, in
+    #         # case we don't have write permissions to the current working dir (which
+    #         # can happen when deployed).
+    #         tempReport <- file.path(tempdir(), "report.Rmd")
+    #         file.copy("report.Rmd", tempReport, overwrite = TRUE)
+    #         
+    #         # Set up parameters to pass to Rmd document
+    #         params <- list(data = rvs$data, plot = rvs$plot, x_val = input$xval, y_val = input$yval,
+    #                        set_title = input$title, set_author = input$author)
+    #         
+    #         # Knit the document, passing in the `params` list, and eval it in a
+    #         # child of the global environment (this isolates the code in the document
+    #         # from the code in this app).
+    #         rmarkdown::render(tempReport, output_file = file, 
+    #                           params = params,
+    #                           envir = new.env(parent = globalenv())
+    #         )
+    #     }
+    # )
+    output$download <- downloadHandler(
+        # Downloading report currently doesn't work, see this issue:
+        # https://github.com/rstudio/shiny/issues/2152
+        # See also: 
+        # https://github.com/rstudio/shiny-server/issues/197
+        filename = paste0("Report", Sys.Date(), ".pdf"),
+        content = function(file) {
+            file.copy(rvs$filepath, file)
+        }
+    )
     
     
     observeEvent(input$switch_to_table, {

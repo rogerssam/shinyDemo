@@ -1,9 +1,44 @@
 ---
-title: "Report"
+date: "`r format(Sys.Date(), format = '%d %B %Y')`"
 output:
   pdf_document: default
 params:
-  n: NA
+  data: NA
+  plot: NA
+  x_val: NA
+  y_val: NA
+  set_title: "Report"
+  set_author: NA
+title: "`r params$set_title`"
+author: "`r params$set_author`"
 ---
 
-Hello world! n = `r params$n`
+# Data
+
+First, we will summarise the data:
+
+```{r}
+# if(params$data != "NA") {
+    head(params$data)
+    str(params$data)
+# }
+```
+
+# Plot
+
+You produced a plot of `r params$x_val` against `r params$y_val` which is displayed below:
+
+```{r}
+# if(params$plot != "NA") 
+    print(params$plot)
+```
+
+# Model
+
+We can create a linear model based on the data selected for the plot. We are creating a linear regression to model response variable `r param$y_val` against predictor variable `r params$y_val`.
+
+```{r}
+model <- lm(reformulate(params$x_val, params$y_val), data = params$data)
+summary(model)
+```
+
