@@ -57,3 +57,9 @@ From https://stackoverflow.com/questions/37113739/shiny-dashboard-sticky-footer-
     }*/
 }
 
+#disclaimer {
+    position:relative;
+    display: block !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}

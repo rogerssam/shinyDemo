@@ -217,7 +217,7 @@ ui <- shinyUI(dashboardPagePlus(
                                         actionBttn(
                                             inputId = "disclaimer",
                                             label = "Disclaimer", 
-                                            style = "bordered",
+                                            style = "material-flat",
                                             color = "warning",
                                             icon = icon("warning"),
                                             size = "xs"
