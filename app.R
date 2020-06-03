@@ -2,7 +2,7 @@ library(shiny)
 # library(shinyjs)
 library(shinydashboard)
 library(shinydashboardPlus)
-library(shinyalert)
+# library(shinyalert)
 library(shinyWidgets)
 library(ggplot2)
 library(rhandsontable)
@@ -173,8 +173,8 @@ ui <- shinyUI(dashboardPagePlus(
                                     box(width = NULL, title = "Generate a Report", solidHeader = T, status = "primary",
                                         div(class = "container-fluid",
                                             div(class = 'row',
-                                                div(class = 'col-md', id = 'bibtex_no', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;",
-                                                    textInput("bibtex_no", "Enter Report Number:", placeholder = "Report Number")),
+                                                div(class = 'col-md', id = 'title', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;",
+                                                    textInput("title", "Enter Report Title:", placeholder = "Report Title")),
                                                 div(class = 'col-md', id = "sel_title", style="float: right;vertical-align:top; width: 49%;",
                                                     pickerInput(
                                                         inputId = "select_title",
@@ -219,13 +219,13 @@ ui <- shinyUI(dashboardPagePlus(
                                         h3("Packages:"),
                                         a(href="https://shiny.rstudio.com/", "shiny", .noWS = "after"), ": for the application", br(),
                                         a(href="https://rstudio.github.io/shinydashboard/", "shinydashboard", .noWS = "after"), ", ",
-                                        a(href="https://rinterface.github.io/shinydashboardPlus/", "shinydashboardPlus", .noWS = "after"), ", ", 
-                                        a(href="", "shinyalert", .noWS = "after"), " and ", 
-                                        a(href="", "shinyWidgets", .noWS = "after"), ": to customise the appearance of the application", br(),
-                                        a(href="", "ggplot2", .noWS = "after"), ": to produce the plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
-                                        a(href="", "Cairo", .noWS = "after"), ": to produce higher resolution plots in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
-                                        a(href="", "rhandsontable", .noWS = "after"), ": for producing the editable table in the", actionLink("switch_to_table", "Table"), "tab", br(),
-                                        a(href="", "lubridate", .noWS = "after"), ": for translation of dates in the", actionLink("switch_to_table", "Table"), "tab", br(),
+                                        a(href="https://rinterface.github.io/shinydashboardPlus/", "shinydashboardPlus", .noWS = "after"), " and ", 
+                                        a(href="https://dreamrs.github.io/shinyWidgets/index.html", "shinyWidgets", .noWS = "after"), ": to customise the appearance of the application", br(),
+                                        a(href="https://ggplot2.tidyverse.org/", "ggplot2", .noWS = "after"), ": to produce the static plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
+                                        a(href="https://plotly.com/r/", "plotly", .noWS = "after"), ": to produce the interactive plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
+                                        a(href="http://www.rforge.net/Cairo/", "Cairo", .noWS = "after"), ": to produce higher resolution plots in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
+                                        a(href="https://jrowen.github.io/rhandsontable/", "rhandsontable", .noWS = "after"), ": for producing the editable table in the", actionLink("switch_to_table", "Table"), "tab", br(),
+                                        a(href="https://lubridate.tidyverse.org/", "lubridate", .noWS = "after"), ": for translation of dates in the", actionLink("switch_to_table", "Table"), "tab", br(),
                                         
                                         h3("Author:"),
                                         "This app was developed by Sam Rogers.",
@@ -315,7 +315,7 @@ server <- function(input, output, session) {
                Minimal = p <- p + theme_minimal(base_size=16),
                Dark = p <- p + theme_dark(base_size=16)
         )
-        
+        rvs$plot <- p
         return(p)
     })
     
@@ -351,7 +351,7 @@ server <- function(input, output, session) {
                Minimal = p <- p + theme_minimal(base_size=16),
                Dark = p <- p + theme_dark(base_size=16)
         )
-        
+        rvs$plot <- p
         p <- ggplotly(p)
         
         return(p)
