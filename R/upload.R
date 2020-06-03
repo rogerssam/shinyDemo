@@ -1,4 +1,6 @@
 # Upload CSV module
+library(shiny)
+library(shinyWidgets)
 
 csvFileUI <- function(id, label = "CSV file") {
     # Create a namespace function using the provided id
@@ -27,8 +29,11 @@ csvFileUI <- function(id, label = "CSV file") {
                         label = "Separator:", 
                         choices = c(Comma = ",", Semicolon = ";", Tab = "\t"),
                         selected = ",",
+                        plain = TRUE,
+                        fill = T,
                         inline = TRUE, 
-                        status = "primary",
+                        shape = "square",
+                        # status = "primary",
                         animation = "pulse",
                         icon = icon("check")
                     )

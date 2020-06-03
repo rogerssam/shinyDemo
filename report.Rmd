@@ -1,0 +1,9 @@
+---
+title: "Report"
+output:
+  pdf_document: default
+params:
+  n: NA
+---
+
+Hello world! n = `r params$n`

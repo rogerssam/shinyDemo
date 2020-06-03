@@ -1,37 +1,46 @@
 library(shiny)
-library(shinyjs)
+# library(shinyjs)
 library(shinydashboard)
 library(shinydashboardPlus)
 library(shinyalert)
 library(shinyWidgets)
 library(ggplot2)
-# library(data.table)
 library(rhandsontable)
 library(lubridate)
+library(Cairo)
 source("R/upload.R")
+
+options(shiny.usecairo=T)
+shinyOptions(plot.autocolors = TRUE)
 
 # Define UI for application
 ui <- shinyUI(dashboardPagePlus(
     dashboardHeaderPlus(title = tagList(
         span(class = "logo-lg", "Shiny Demo", style = "padding: 0;"), 
-        img(src = "BH_square.jpg"))),
-    # enable_preloader = TRUE,
-    # loading_duration = 3,
+        img(src = "BH_square.jpg"))#,
+        # dropdown(notificationItem("text", icon = shiny::icon("warning"), status = "success",
+        # href = NULL))
+    ),
+    enable_preloader = TRUE,
+    loading_duration = 1,
+    # ,
     
     dashboardSidebar(collapsed = TRUE,# width = 300,
                      sidebarMenu(id = "tabs",
                                  menuItem(tabName = "upload", "Upload or Select Data", icon = icon("upload", class = "fa-lg")),
                                  menuItem(tabName = "plot", "Plot", icon = icon("chart-bar", class = "fa-lg")),
                                  menuItem(tabName = "table", "Table", icon = icon("table", class = "fa-lg")),
-                                 menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg"))
+                                 menuItem(tabName = "report", "Generate a Report", icon = icon("file-alt", class = "fa-lg")),
+                                 menuItem(tabName = "about", "About This App", icon = icon("info-circle", class = "fa-lg"))
                      )
     ),
     
     dashboardBody(
         #Include the css
         tags$head(includeCSS("www/custom.css")),
-        useShinyjs(),  # Include shinyjs
-        useShinyalert(),  # Include shinyalert
+        # useShinyjs(),  # Include shinyjs
+        # useShinyalert(),  # Include shinyalert
+        useSweetAlert(),
         
         # Add scripts and favicons etc
         shiny::singleton(
@@ -59,76 +68,13 @@ ui <- shinyUI(dashboardPagePlus(
                                         tags$hr(),
                                         materialSwitch(
                                             inputId = "builtin",
-                                            label = "Use built-in iris data", 
+                                            label = span("Use built-in", em(strong("iris")), "data"), 
                                             value = TRUE,
                                             status = "success"
                                         )
-                                        
-                                        
-                                        
-                                        
-                                        
+ 
                                     ), 
-                                    # textInput("title", HTML(paste("Please enter your document title:", span("*", style="color:red"))), placeholder = "Document title"),
-                                    # textInput("author", HTML(paste("Please enter at least one author of the document:", span("*", style="color:red"))), placeholder = "Author 1, Author 2, ..."),
                                     
-                                    # div(class = "container-fluid",
-                                    #     div(class = 'row',
-                                    #         div(class = 'col-md', id = 'project_code', style="float: left; vertical-align:top; width: 49%; margin-right: 2%", 
-                                    #             textInput("project_code", "Please enter a project code if relevant:", placeholder = "Project code (optional)")),
-                                    #         div(class = 'col-md', id = "report_type", style="float: left; vertical-align:top; width: 49%;", 
-                                    #             selectInput("report_type", "Please select the report type:", selectize = F, 
-                                    #                         c("Analysis Report", "Design Report", "Technical Report", "Presentation", "Paper", "Poster", "Other"))
-                                    #         )
-                                    #     )
-                                    # )
-                                    
-                                    
-                                    # div(class = "container-fluid",
-                                    #     div(class = 'row',
-                                    #         div(class = 'col-md', id = 'related', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%", 
-                                    #             pickerInput(
-                                    #                 inputId = "related",
-                                    #                 label = "Report number(s) of related reports (e.g. Design report):", 
-                                    #                 choices = NA,
-                                    #                 multiple = TRUE,
-                                    #                 options = list(title = "Select or type (optional)",
-                                    #                                `live-search` = TRUE)
-                                    #             )),
-                                    #         # selectizeInput(inputId = "related", label = "Report number(s) of related reports (e.g. Design report):", choices = NULL)),
-                                    #         div(class = 'col-md', id = "keywords", style="float: right;vertical-align:top; width: 49%;", 
-                                    #             textInput("keywords", "Keywords:", placeholder = "A few relevant keywords (optional)")
-                                    #         )
-                                    #     )
-                                    # ),
-                                    # div(class = "container-fluid",
-                                    #     div(class = 'row',
-                                    #         div(class = 'col-md', id = 'recipient', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;", 
-                                    #             textInput("recipient", "Recipient of this report:", placeholder = "Recipient name(s) or email(s) (optional)"),
-                                    #             switchInput(
-                                    #                 inputId = "sardi",
-                                    #                 label = "SARDI Report", 
-                                    #                 inline = TRUE,
-                                    #                 labelWidth = "90px",
-                                    #                 onStatus = "success",
-                                    #                 onLabel = "Yes", offLabel = "No"
-                                    #             )),
-                                    #         div(class = 'col-md', id = "date", style="float: right;vertical-align:top; width: 49%;", 
-                                    #             dateInput('date', value = Sys.Date(), "Date of report:", 
-                                    #                       max = Sys.Date(), format = "MM yyyy", startview = "year")#,
-                                    #             # p(), br(), 
-                                    #             
-                                    #             # prettySwitch(inputId = "sardi", label = "SARDI Report", status = "success", fill = TRUE, bigger = TRUE, inline = T)
-                                    #         )
-                                    #     )
-                                    # ),
-                                    # br(),
-                                    # actionButton("submit", "Submit", align = 'centre', class="btn btn-disabled"),
-                                    # span(actionButton("reset", "Reset Fields", align = 'centre'), HTML(paste0(span("*", style="color:red"), ": Required field")), style ="float: right")),
-                                    # 
-                                    # fluidRow(conditionalPanel(
-                                    #     uiOutput("confirmation"), width = 12)),
-                                    # br(),
                                     box(width = NULL,
                                         # title = textOutput("filetitle"), 
                                         solidHeader = T, status = "success",
@@ -137,6 +83,7 @@ ui <- shinyUI(dashboardPagePlus(
                              )
                     )
             ),
+            
             tabItem(tabName = "plot",
                     # hidden(
                     fluidRow(id = "plot",
@@ -171,6 +118,7 @@ ui <- shinyUI(dashboardPagePlus(
                              )
                     )
             ),
+            
             tabItem(tabName = "table",
                     # hidden(
                     fluidRow(id = "update_cols", 
@@ -193,76 +141,93 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 12,
                                     box(width = NULL,
                                         title = "Edit the data", solidHeader = T, status = "success",
-                                        rhandsontable::rHandsontableOutput("rhtable", height = 400))
+                                        rhandsontable::rHandsontableOutput("rhtable", height = "60vh"))
                              )
                     )
-            )#,
-            # tabItem(tabName = "update",
-            #         # hidden(
-            #         fluidRow(id = "update",
-            #                  column(width = 2),
-            #                  column(width = 8,
-            #                         box(width = NULL,
-            #                             title = "Update a Report", solidHeader = T, status = "primary")
-            #                  ),
-            #                  column(width=2)
-            #         )
-            #         # )
-            # ),
-            # tabItem(tabName = "bibtex",
-            #         # hidden(
-            #         fluidRow(id = "bibtex",
-            #                  column(width = 2),
-            #                  column(width = 8,
-            #                         box(width = NULL, title = "Enter Report Number or Select Title", solidHeader = T, status = "primary",
-            #                             div(class = "container-fluid",
-            #                                 div(class = 'row',
-            #                                     div(class = 'col-md', id = 'bibtex_no', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;", 
-            #                                         textInput("bibtex_no", "Enter Report Number:", placeholder = "Report Number")),
-            #                                     div(class = 'col-md', id = "sel_title", style="float: right;vertical-align:top; width: 49%;", 
-            #                                         pickerInput(
-            #                                             inputId = "select_title",
-            #                                             label = "Select a title (or type to narrow options)", 
-            #                                             choices = NA,
-            #                                             options = list(title = "Select or type title",
-            #                                                            `live-search` = TRUE)
-            #                                         ))
-            #                                     # selectizeInput(inputId = "select_title", label = "Select a title (or start typing to narrow options)", choices = NULL))
-            #                                 ),
-            #                                 div(class = 'row',
-            #                                     div(class = 'col-md', id = 'include_no',
-            #                                         prettySwitch(inputId = "include_no", label = "Include Report Number in Bibtex Title", status = "success", fill = TRUE, bigger = TRUE)
-            #                                     )
-            #                                 )
-            #                             ),
-            #                             br(),
-            #                             h4("You have selected"),
-            #                             DT::dataTableOutput('report'),
-            #                             br(),
-            #                             # h4("The Bibtex entry for your selected report is"),
-            #                             # uiOutput('bibtex'),
-            #                             # br()#,
-            #                             downloadButton('download')
-            #                         )      
-            #                  ),
-            #                  column(width=2)
-            #                  # )
-            #         )
-            # ),
-            # tabItem(tabName = "support",
-            #         # hidden(
-            #         fluidRow(id = "support",
-            #                  column(width = 2),
-            #                  column(width = 8,
-            #                         box(width = NULL, title = "Help and Support", solidHeader = TRUE,
-            #                             status = "danger",
-            #                             h4("For help contact ", a(href="mailto:s.rogers@adelaide.edu.au", "Sam Rogers"))
-            #                         )
-            #                  ),
-            #                  column(width=2)
-            #         )
-            #         # )
-            # )
+            ),
+            
+            tabItem(tabName = "report",
+                    # hidden(
+                    fluidRow(id = "report",
+                             column(width = 1),
+                             column(width = 10,
+                                    box(width = NULL, title = "Generate a Report", solidHeader = T, status = "primary",
+                                        div(class = "container-fluid",
+                                            div(class = 'row',
+                                                div(class = 'col-md', id = 'bibtex_no', style="float: left;vertical-align:top; width: 49%; margin-right: 1.5%;",
+                                                    textInput("bibtex_no", "Enter Report Number:", placeholder = "Report Number")),
+                                                div(class = 'col-md', id = "sel_title", style="float: right;vertical-align:top; width: 49%;",
+                                                    pickerInput(
+                                                        inputId = "select_title",
+                                                        label = "Select a title (or type to narrow options)",
+                                                        choices = NA,
+                                                        options = list(title = "Select or type title",
+                                                                       `live-search` = TRUE)
+                                                    ))
+                                                # selectizeInput(inputId = "select_title", label = "Select a title (or start typing to narrow options)", choices = NULL))
+                                            ),
+                                            div(class = 'row',
+                                                div(class = 'col-md', id = 'include_no',
+                                                    prettySwitch(inputId = "include_no", label = "Include Report Number in Bibtex Title", status = "success", fill = TRUE, bigger = TRUE)
+                                                )
+                                            )
+                                        ),
+                                        br(),
+                                        h4("You have selected"),
+                                        DT::dataTableOutput('report'),
+                                        br(),
+                                        # h4("The Bibtex entry for your selected report is"),
+                                        # uiOutput('bibtex'),
+                                        # br()#,
+                                        downloadButton('download')
+                                    )
+                             ),
+                             column(width=1)
+                             # )
+                    )
+            ),
+            tabItem(tabName = "about",
+                    # hidden(
+                    fluidRow(id = "about",
+                             column(width = 2),
+                             column(width = 8,
+                                    box(width = NULL, solidHeader = F,
+                                        status = "danger",
+                                        
+                                        h3("Information about this app:"),
+                                        "This application is a demonstration of some of the capabilities of the shiny framework. It allows the user to upload a file (or use a built-in dataset), produce a plot, view and edit the data in an output table and then download an example report based on the input to the app.",
+                                        
+                                        h3("Packages:"),
+                                        a(href="https://shiny.rstudio.com/", "shiny", .noWS = "after"), ": for the application", br(),
+                                        a(href="https://rstudio.github.io/shinydashboard/", "shinydashboard", .noWS = "after"), ", ",
+                                        a(href="https://rinterface.github.io/shinydashboardPlus/", "shinydashboardPlus", .noWS = "after"), ", ", 
+                                        a(href="", "shinyalert", .noWS = "after"), " and ", 
+                                        a(href="", "shinyWidgets", .noWS = "after"), ": to customise the appearance of the application", br(),
+                                        a(href="", "ggplot2", .noWS = "after"), ": to produce the plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
+                                        a(href="", "Cairo", .noWS = "after"), ": to produce higher resolution plots in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
+                                        a(href="", "rhandsontable", .noWS = "after"), ": for producing the editable table in the", actionLink("switch_to_table", "Table"), "tab", br(),
+                                        a(href="", "lubridate", .noWS = "after"), ": for translation of dates in the", actionLink("switch_to_table", "Table"), "tab", br(),
+                                        
+                                        h3("Author:"),
+                                        "This app was developed by Sam Rogers.",
+                                        br(), br(), 
+                                        h3("More information:"),
+                                        "For help with this app or requests to develop a Shiny application please contact", a(href="mailto:biometryhub@adelaide.edu.au", "The Biometry Hub"),
+                                        br(),br(),
+                                        actionBttn(
+                                            inputId = "disclaimer",
+                                            label = "Disclaimer", 
+                                            style = "bordered",
+                                            color = "warning",
+                                            icon = icon("warning"),
+                                            size = "xs"
+                                        )
+                                    )
+                             ),
+                             column(width=2)
+                    )
+                    # )
+            )
         )
     )
 )
@@ -325,11 +290,11 @@ server <- function(input, output, session) {
         )
         
         switch(input$theme,
-               Default = p + theme_gray(),
-               bw = p + theme_bw(),
-               Classic = p + theme_classic(),
-               Minimal = p + theme_minimal(),
-               Dark = p + theme_dark()
+               Default = p + theme_gray(base_size=16),
+               bw = p + theme_bw(base_size=16),
+               Classic = p + theme_classic(base_size=16),
+               Minimal = p + theme_minimal(base_size=16),
+               Dark = p + theme_dark(base_size=16)
         )
         
     })
@@ -371,6 +336,45 @@ server <- function(input, output, session) {
         if(input$col_type == "Factor") {
             try(rvs$data[[input$col_select]] <- factor(rvs$data[[input$col_select]]))
         }
+    })
+    
+    
+    
+    observeEvent(input$switch_to_table, {
+        updateTabItems(session, "tabs", "table")
+    })
+    observeEvent(input$switch_to_plot, {
+        updateTabsetPanel(session, "tabs", "plot")
+    })
+    
+    observeEvent(input$disclaimer, {
+        sendSweetAlert(
+            session = session,
+            title = "Disclaimer",
+            text = tags$span(tags$p('Copyright (c) 2020 University of Adelaide Biometry Hub'),
+                             tags$p('Permission is hereby granted, free of charge, to any person obtaining
+          a copy of this software and associated documentation files (the
+          "Software"), to deal in the Software without restriction, including
+          without limitation the rights to use, copy, modify, merge, publish,
+          distribute, sublicense, and/or sell copies of the Software, and to
+          permit persons to whom the Software is furnished to do so, subject to
+          the following conditions:'),
+                             tags$ul(
+                                 tags$li('The above copyright notice and this permission notice shall
+                  be included in all copies or substantial portions of the
+                  Software.')
+                             ),
+                             tags$strong('THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+               EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+               OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+               NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+               HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+               WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+               FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+               OTHER DEALINGS IN THE SOFTWARE.')
+            ),
+            type = "warning"
+        )
     })
 }
 

@@ -10,4 +10,4 @@
 - ~~Update plot when data edited~~
 - Output an Rmarkdown report as pdf
     - Including parameters in Rmd
-- Info box top right explaining what the app does, and packages used
+- ~~Info tab explaining what the app does, and packages used~~
