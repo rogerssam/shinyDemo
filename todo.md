@@ -8,6 +8,8 @@
 - ~~Produce tabular summary~~
     - ~~Using DT~~
 - ~~Update plot when data edited~~
-- Output an Rmarkdown report as pdf
-    - Including parameters in Rmd
+- ~~Output an Rmarkdown report as pdf~~
+    - ~~Including parameters in Rmd~~
 - ~~Info tab explaining what the app does, and packages used~~
+- Fix styling for download button
+- Add alert that data will not be stored
