@@ -15,13 +15,11 @@ author: "`r params$set_author`"
 
 # Data
 
-First, we will summarise the data:
+First, the data will be summarised:
 
 ```{r}
-# if(params$data != "NA") {
-    head(params$data)
-    str(params$data)
-# }
+head(params$data)
+str(params$data)
 ```
 
 # Plot
@@ -29,13 +27,12 @@ First, we will summarise the data:
 You produced a plot of `r params$x_val` against `r params$y_val` which is displayed below:
 
 ```{r}
-# if(params$plot != "NA") 
-    print(params$plot)
+print(params$plot)
 ```
 
 # Model
 
-We can create a linear model based on the data selected for the plot. We are creating a linear regression to model response variable `r param$y_val` against predictor variable `r params$y_val`.
+A linear model based on the data selected for the plot can be created. This is a linear regression to model response variable `r params$y_val` against predictor variable `r params$x_val`.
 
 ```{r}
 model <- lm(reformulate(params$x_val, params$y_val), data = params$data)

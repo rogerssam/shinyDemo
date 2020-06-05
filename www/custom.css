@@ -63,3 +63,8 @@ From https://stackoverflow.com/questions/37113739/shiny-dashboard-sticky-footer-
     margin-left: auto !important;
     margin-right: auto !important;
 }
+
+.notification {
+  font-size: 10pt;
+  color: red;
+}

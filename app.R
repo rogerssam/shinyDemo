@@ -1,5 +1,5 @@
 library(shiny)
-# library(shinyjs)
+library(shinyjs)
 library(shinydashboard)
 library(shinydashboardPlus)
 # library(shinyalert)
@@ -36,7 +36,7 @@ ui <- shinyUI(dashboardPagePlus(
     dashboardBody(
         #Include the css
         tags$head(includeCSS("www/custom.css")),
-        # useShinyjs(),  # Include shinyjs
+        useShinyjs(),  # Include shinyjs
         # useShinyalert(),  # Include shinyalert
         useSweetAlert(),
         
@@ -59,6 +59,22 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 1),
                              column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
+                                        # gradientBox(
+                                        #     title = "Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer.",
+                                        #     width = 12,
+                                        #     icon = "fa fa-warning",
+                                        #     gradientColor = "danger", 
+                                        #     boxToolSize = "xs", 
+                                        #     closable = TRUE,
+                                        #     footer_padding = F
+                                        # ),
+                                        # div(class="alert alert-warning alert-dismissible fade show", role="alert",
+                                        #     HTML('<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        #     <span aria-hidden="true">&times;</span>
+                                        #     </button>'),
+                                        #     "You should check in on some of those fields below."
+                                        # ),
+                                        # use_bs_tooltip(),
                                         csvFileUI("datafile", "User data (.csv format)"),
                                         
                                         # Horizontal line ----
@@ -195,7 +211,7 @@ ui <- shinyUI(dashboardPagePlus(
                                         status = "danger",
                                         
                                         h3("Information about this app:"),
-                                        "This application is a demonstration of some of the capabilities of the shiny framework. It allows the user to upload a file (or use a built-in dataset), produce a plot, view and edit the data in an output table and then download an example report based on the input to the app.",
+                                        "This application is a demonstration of some of the capabilities of the R shiny framework. It allows the user to upload a file (or use a built-in dataset), produce a plot, view and edit the data in an output table and then download an example report based on the input to the app. Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer.",
                                         
                                         h3("Packages:"),
                                         a(href="https://shiny.rstudio.com/", "shiny", .noWS = "after"), ": for the application", br(),
@@ -448,7 +464,7 @@ server <- function(input, output, session) {
         # https://github.com/rstudio/shiny/issues/2152
         # See also: 
         # https://github.com/rstudio/shiny-server/issues/197
-        filename = paste0("Report", Sys.Date(), ".pdf"),
+        filename = paste0("Report-", Sys.Date(), ".pdf"),
         content = function(file) {
             file.copy(rvs$filepath, file)
         }
