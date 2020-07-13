@@ -2,7 +2,6 @@ library(shiny)
 library(shinyjs)
 library(shinydashboard)
 library(shinydashboardPlus)
-# library(shinyalert)
 library(shinyWidgets)
 library(ggplot2)
 library(rhandsontable)
@@ -59,22 +58,11 @@ ui <- shinyUI(dashboardPagePlus(
                              column(width = 1),
                              column(width = 10,
                                     box(width = NULL, title = "Upload file", solidHeader = T, status = "primary",
-                                        # gradientBox(
-                                        #     title = "Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer.",
-                                        #     width = 12,
-                                        #     icon = "fa fa-warning",
-                                        #     gradientColor = "danger", 
-                                        #     boxToolSize = "xs", 
-                                        #     closable = TRUE,
-                                        #     footer_padding = F
-                                        # ),
-                                        # div(class="alert alert-warning alert-dismissible fade show", role="alert",
-                                        #     HTML('<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                        #     <span aria-hidden="true">&times;</span>
-                                        #     </button>'),
-                                        #     "You should check in on some of those fields below."
-                                        # ),
-                                        # use_bs_tooltip(),
+                                        HTML('<div class="alert alert-warning alert-dismissible" role="alert">
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+  <strong>Please Note:</strong> Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer.
+                                             </div>'),
+                                        
                                         csvFileUI("datafile", "User data (.csv format)"),
                                         
                                         # Horizontal line ----

@@ -2,7 +2,6 @@
 library(shiny)
 library(shinyWidgets)
 library(shinydashboardPlus)
-library(tippy)
 
 
 csvFileUI <- function(id, label = "CSV file") {
@@ -10,8 +9,7 @@ csvFileUI <- function(id, label = "CSV file") {
     ns <- NS(id)
 
     tagList(
-        # span(class = "notification", "Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer."),
-        with_tippy(fileInput(ns("file"), label), "Test"),
+        fileInput(ns("file"), label),
         div(class = "container-fluid",
             div(class = 'row',
                 div(class = 'col-md-4', id = 'header', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
