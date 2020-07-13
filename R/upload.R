@@ -65,7 +65,7 @@ csvFileServer <- function(input, output, session, stringsAsFactors) {
     
     # The user's data, parsed into a data frame
     dataframe <- reactive({
-        showFeedbackWarning(inputId = "file")
+        inputId = "file"
         read.csv(userFile()$datapath,
                  header = input$header,
                  # quote = input$quote,

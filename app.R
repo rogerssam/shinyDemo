@@ -36,7 +36,6 @@ ui <- shinyUI(dashboardPagePlus(
         #Include the css
         tags$head(includeCSS("www/custom.css")),
         useShinyjs(),  # Include shinyjs
-        # useShinyalert(),  # Include shinyalert
         useSweetAlert(),
         
         # Add scripts and favicons etc
