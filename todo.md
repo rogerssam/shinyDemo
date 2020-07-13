@@ -12,4 +12,4 @@
     - ~~Including parameters in Rmd~~
 - ~~Info tab explaining what the app does, and packages used~~
 - Fix styling for download button
-- Add alert that data will not be stored
+- ~~Add alert that data will not be stored~~
