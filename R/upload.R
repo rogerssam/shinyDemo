@@ -4,13 +4,11 @@ library(shinyWidgets)
 library(shinydashboardPlus)
 library(shinytoastr)
 
-
 csvFileUI <- function(id, label = "CSV file") {
     # Create a namespace function using the provided id
     ns <- NS(id)
     useToastr()
     tagList(
-        # span(class = "notification", "Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer."),
         fileInput(ns("file"), label),
         div(class = "container-fluid",
             div(class = 'row',
@@ -74,6 +72,7 @@ csvFileServer <- function(input, output, session, stringsAsFactors) {
     
     # The user's data, parsed into a data frame
     dataframe <- reactive({
+        inputId = "file"
         read.csv(userFile()$datapath,
                  header = input$header,
                  # quote = input$quote,
