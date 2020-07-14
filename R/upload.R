@@ -2,16 +2,16 @@
 library(shiny)
 library(shinyWidgets)
 library(shinydashboardPlus)
-library(tippy)
+library(shinytoastr)
 
 
 csvFileUI <- function(id, label = "CSV file") {
     # Create a namespace function using the provided id
     ns <- NS(id)
-
+    useToastr()
     tagList(
         # span(class = "notification", "Any data uploaded to this app is not retained in any way once the app is closed, except through any reports you have downloaded to your computer."),
-        with_tippy(fileInput(ns("file"), label), "Test"),
+        fileInput(ns("file"), label),
         div(class = "container-fluid",
             div(class = 'row',
                 div(class = 'col-md-4', id = 'header', style="float: left; vertical-align:top; width: 24%; margin-right: 2%",
@@ -57,6 +57,13 @@ csvFileUI <- function(id, label = "CSV file") {
 # Module server function
 csvFileServer <- function(input, output, session, stringsAsFactors) {
     # The selected file, if any
+    observeEvent(
+        input$file,
+        {
+            toastr_warning(title = "Please Note", message = "Testing message", position = "top-full-width")
+        }
+    )
+    
     userFile <- reactive({
         # If no file is selected, don't do anything
         validate(need(input$file, message = FALSE))
@@ -67,7 +74,6 @@ csvFileServer <- function(input, output, session, stringsAsFactors) {
     
     # The user's data, parsed into a data frame
     dataframe <- reactive({
-        showFeedbackWarning(inputId = "file")
         read.csv(userFile()$datapath,
                  header = input$header,
                  # quote = input$quote,
