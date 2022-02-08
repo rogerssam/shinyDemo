@@ -2,6 +2,7 @@ library(shiny)
 library(shinyjs)
 library(shinydashboard)
 library(shinydashboardPlus)
+library(waiter)
 library(shinyWidgets)
 library(ggplot2)
 library(rhandsontable)
@@ -14,13 +15,13 @@ options(shiny.usecairo=T)
 shinyOptions(plot.autocolors = TRUE)
 
 # Define UI for application
-ui <- shinyUI(dashboardPagePlus(
-  dashboardHeaderPlus(title = tagList(
+ui <- shinyUI(shinydashboardPlus::dashboardPage(
+    shinydashboardPlus::dashboardHeader(title = tagList(
     span(class = "logo-lg", "Shiny Demo", style = "padding: 0;"), 
-    img(src = "BH_square.jpg"))
+    img(src = "BH_square.jpg")), 
+    controlbarIcon = shiny::icon("cogs")  # Fix for incorrect icon error
   ),
-  enable_preloader = TRUE,
-  loading_duration = 1,
+  preloader = list(html = spin_loaders(16, color = "#12e050")),
   
   dashboardSidebar(collapsed = TRUE,# width = 300,
                    sidebarMenu(id = "tabs",
@@ -107,7 +108,7 @@ ui <- shinyUI(dashboardPagePlus(
                                       inline = T),
                                     
                                     style = "material-circle",
-                                    icon = icon("gear"),
+                                    icon = icon("cog"),
                                     status = "danger", width = "300px",
                                     animate = animateOptions(
                                       enter = animations$fading_entrances$fadeInLeftBig,
@@ -193,7 +194,8 @@ ui <- shinyUI(dashboardPagePlus(
                                   h3("Packages:"),
                                   a(href="https://shiny.rstudio.com/", "shiny", .noWS = "after"), ": for the application", br(),
                                   a(href="https://rstudio.github.io/shinydashboard/", "shinydashboard", .noWS = "after"), ", ",
-                                  a(href="https://rinterface.github.io/shinydashboardPlus/", "shinydashboardPlus", .noWS = "after"), " and ", 
+                                  a(href="https://rinterface.github.io/shinydashboardPlus/", "shinydashboardPlus", .noWS = "after"), ", ", 
+                                  a(href="https://waiter.john-coene.com/#/", "waiter", .noWS = "after"), " and ", 
                                   a(href="https://dreamrs.github.io/shinyWidgets/index.html", "shinyWidgets", .noWS = "after"), ": to customise the appearance of the application", br(),
                                   a(href="https://ggplot2.tidyverse.org/", "ggplot2", .noWS = "after"), ": to produce the static plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
                                   a(href="https://plotly.com/r/", "plotly", .noWS = "after"), ": to produce the interactive plot in the", actionLink("switch_to_plot", "Plot"), "tab", br(),
@@ -212,7 +214,7 @@ ui <- shinyUI(dashboardPagePlus(
                                     label = "Disclaimer", 
                                     style = "material-flat",
                                     color = "warning",
-                                    icon = icon("warning"),
+                                    icon = icon("exclamation-triangle"),
                                     size = "xs"
                                   )
                               )
@@ -440,8 +442,8 @@ server <- function(input, output, session) {
     # https://github.com/rstudio/shiny/issues/2152
     # See also: 
     # https://github.com/rstudio/shiny-server/issues/197
-    filename = paste0("Report-", Sys.Date(), ".pdf"),
-    content = function(file) {
+    filename <- paste0("Report-", Sys.Date(), ".pdf"),
+    content <- function(file) {
       file.copy(rvs$filepath, file)
     }
   )
